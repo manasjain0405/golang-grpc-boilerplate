@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package proto;
+
+message Request {
+    double a = 1;
+    double b = 2;
+}
+
+message Response {
+    double ans = 1;
+}
+
+service CalculatorService {
+
+    rpc Add (Request) returns (Response);
+    rpc Subtract (Request) returns (Response);
+    rpc Multiply (Request) returns (Response);
+    rpc Divide (Request) returns (Response);
+    rpc Power (Request) returns (Response);
+
+
+}
