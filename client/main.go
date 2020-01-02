@@ -12,8 +12,8 @@ import (
 )
 
 type Request struct {
-	name string `json:"name"`
-	age int `json:"age"`
+	Name string `json:"name"`
+	Age int `json:"age"`
 }
 
 func main() {
@@ -121,34 +121,14 @@ func main() {
 	})
 	g.POST("/entries", func(ctx *gin.Context) {
 
-		temp := &Request{}
-		err := ctx.Bind(temp)
+		var temp Request
+		err := ctx.Bind(&temp)
 		if err != nil{
 			log.Panic(err.Error())
 		}
-		//tp, err := ioutil.ReadAll(ctx.Request.Body)
-		//if err!= nil {
-		//	log.Panic(err.Error())
-		//}
-		////log.Print(tp)
-		//json.Unmarshal(tp, &temp)
-		//
-		////ctx.ShouldBind(&temp)
-		//err := json.NewDecoder(ctx.Request.Body).Decode(&temp)
-		//if err != nil {
-		//	log.Println(err.Error())
-		//}
-		log.Print("From post entries: ")
-		//log.Println(ctx.GetRawData())
-		log.Println(temp.age, temp.name)
-		//log.Println(string(tp))
-		//age, err :=  strconv.ParseInt(ctx.DefaultPostForm("age", "0"), 10, 64)
-		//if err!=nil {
-		//	log.Panic(err.Error())
-		//}
-		//if err := myDB.AddEntry(name, int(age)); err!=nil {
-		//	log.Panic(err.Error())
-		//}
+		if err := myDB.AddEntry(temp.Name, int(temp.Age)); err!=nil {
+			log.Panic(err.Error())
+		}
 	})
 	if err := g.Run(":8080"); err!=nil {
 		log.Fatalf("Failed to run server: %v", err)
