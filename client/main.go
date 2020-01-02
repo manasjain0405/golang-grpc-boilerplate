@@ -11,6 +11,11 @@ import (
 	"strconv"
 )
 
+type Request struct {
+	name string `json:"name"`
+	age int `json:"age"`
+}
+
 func main() {
 	conn, err := grpc.Dial("localhost:4040", grpc.WithInsecure())
 	if err != nil {
@@ -103,7 +108,7 @@ func main() {
 		}
 	})
 	g.GET("/entries", func(ctx *gin.Context) {
-		ctx.JSON(http.StatusOK, gin.H{"items": fmt.Sprint(myDB.GetAllEntry())})
+		ctx.JSON(http.StatusOK, gin.H{"items": myDB.GetAllEntry()})
 
 	})
 	g.GET("/entries/:id", func(ctx *gin.Context) {
@@ -111,18 +116,13 @@ func main() {
 		if err!= nil {
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
 		}
-		ctx.JSON(http.StatusOK, gin.H{"items": fmt.Sprint(myDB.GetEntry(id))})
+		ctx.JSON(http.StatusOK, gin.H{"item": myDB.GetEntry(id)})
 
 	})
-	type Request struct {
-		name string `json:"name"`
-		age int `json:"age"`
-	}
 	g.POST("/entries", func(ctx *gin.Context) {
 
-
-		var temp Request
-		err := ctx.Bind(&temp)
+		temp := &Request{}
+		err := ctx.Bind(temp)
 		if err != nil{
 			log.Panic(err.Error())
 		}
@@ -133,14 +133,13 @@ func main() {
 		////log.Print(tp)
 		//json.Unmarshal(tp, &temp)
 		//
-		////ctx.ShouldBind(temp)
-		////tx.Request.Body.Bind(temp)
+		////ctx.ShouldBind(&temp)
 		//err := json.NewDecoder(ctx.Request.Body).Decode(&temp)
 		//if err != nil {
 		//	log.Println(err.Error())
 		//}
 		log.Print("From post entries: ")
-		log.Println(temp)
+		//log.Println(ctx.GetRawData())
 		log.Println(temp.age, temp.name)
 		//log.Println(string(tp))
 		//age, err :=  strconv.ParseInt(ctx.DefaultPostForm("age", "0"), 10, 64)

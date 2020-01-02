@@ -10,9 +10,9 @@ import (
 )
 
 type Entry struct {
-	Id int64
-	Name string
-	Age int
+	Id int64 `json:"id"`
+	Name string `json:"name"`
+	Age int `json:"age"`
 }
 
 type Config struct {
