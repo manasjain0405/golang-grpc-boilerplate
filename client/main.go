@@ -1,30 +1,15 @@
 package main
 
 import (
-	"database/sql"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	_ "github.com/go-sql-driver/mysql"
+	"golang-grpc-boilerplate/myDB"
 	"golang-grpc-boilerplate/proto"
 	"google.golang.org/grpc"
 	"log"
 	"net/http"
 	"strconv"
 )
-
-type Item struct {
-	Name string //`json:"Name"`
-	Type string //`json:"Type"`
-	Quantity int64 //`json:"Quantity"`
-	Price float64
-	Tax float64
-	Total_Price float64
-
-}
-
-func (i Item) String() string {
-	return fmt.Sprintf("Name: %v \n Type: %v \n Quantity: %v \n Price: %v \n", i.Name, i.Type, i.Quantity, i.Price)
-}
 
 func main() {
 	conn, err := grpc.Dial("localhost:4040", grpc.WithInsecure())
@@ -117,31 +102,54 @@ func main() {
 
 		}
 	})
-	g.GET("/database-connection", func(ctx *gin.Context) {
-		db, err := sql.Open("mysql","root:nuclei@123@tcp(127.0.0.1:3306)/Nuclei" )
-		if err != nil {
+	g.GET("/entries", func(ctx *gin.Context) {
+		ctx.JSON(http.StatusOK, gin.H{"items": fmt.Sprint(myDB.GetAllEntry())})
+
+	})
+	g.GET("/entries/:id", func(ctx *gin.Context) {
+		id, err := strconv.ParseInt(ctx.Param("id"), 10, 64)
+		if err!= nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
+		}
+		ctx.JSON(http.StatusOK, gin.H{"items": fmt.Sprint(myDB.GetEntry(id))})
+
+	})
+	type Request struct {
+		name string `json:"name"`
+		age int `json:"age"`
+	}
+	g.POST("/entries", func(ctx *gin.Context) {
+
+
+		var temp Request
+		err := ctx.Bind(&temp)
+		if err != nil{
 			log.Panic(err.Error())
 		}
-		log.Println( "DB Connection Successful")
-		defer db.Close()
-
-		res, err := db.Query("Select * FROM Items")
-		if err != nil {
-			log.Panic(err.Error())
-		}
-
-		var items []Item
-		for res.Next() {
-			var i Item
-			err = res.Scan(&i.Name, &i.Type, &i.Quantity, &i.Price)
-			if err != nil {
-				log.Panic(err.Error())
-			}
-			items = append(items, i)
-			log.Print(i)
-		}
-		ctx.JSON(http.StatusOK, gin.H{"items": fmt.Sprint(items)})
-
+		//tp, err := ioutil.ReadAll(ctx.Request.Body)
+		//if err!= nil {
+		//	log.Panic(err.Error())
+		//}
+		////log.Print(tp)
+		//json.Unmarshal(tp, &temp)
+		//
+		////ctx.ShouldBind(temp)
+		////tx.Request.Body.Bind(temp)
+		//err := json.NewDecoder(ctx.Request.Body).Decode(&temp)
+		//if err != nil {
+		//	log.Println(err.Error())
+		//}
+		log.Print("From post entries: ")
+		log.Println(temp)
+		log.Println(temp.age, temp.name)
+		//log.Println(string(tp))
+		//age, err :=  strconv.ParseInt(ctx.DefaultPostForm("age", "0"), 10, 64)
+		//if err!=nil {
+		//	log.Panic(err.Error())
+		//}
+		//if err := myDB.AddEntry(name, int(age)); err!=nil {
+		//	log.Panic(err.Error())
+		//}
 	})
 	if err := g.Run(":8080"); err!=nil {
 		log.Fatalf("Failed to run server: %v", err)
